@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../providers/AuthProvider';
+import { useAuth } from '../hooks/useAuth';
 import { issuesAPI } from '../api/issues';
 import type { Issue, IssueStatus, IssueCategory } from '../types';
 import { IssueCard } from '../components/IssueCard';
@@ -24,7 +24,7 @@ export function MyIssuesPage() {
 
   const { viewMode, setViewMode } = useFilterStore();
 
-  const loadIssues = async () => {
+  const loadIssues = useCallback(async () => {
     if (!user) return;
     setIsLoading(true);
     try {
@@ -36,11 +36,11 @@ export function MyIssuesPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     loadIssues();
-  }, [user]);
+  }, [loadIssues]);
 
   useEffect(() => {
     let filtered = [...issues];
@@ -73,7 +73,7 @@ export function MyIssuesPage() {
     if (!user || !confirm('Are you sure you want to delete this issue?')) return;
 
     try {
-      await issuesAPI.deleteIssue(issueId, user.id);
+      await issuesAPI.deleteIssue(issueId);
       await loadIssues();
       toast.success('Issue deleted successfully');
     } catch (error) {

@@ -32,11 +32,19 @@ export const useAuthStore = create<AuthStore>()(
                         const data = response as { data: { token: string; user: User } }
                         set({ token: data.data.token, user: data.data.user })
                     } else {
+                        const { token } = useAuthStore.getState()
+                        if (!token) {
+                            set({ user: null })
+                            return
+                        }
                         const user = await getMyUser()
                         set({ user })
                     }
                 } catch (e) {
                     console.error("Failed to login", e)
+                    if (!email && !password) {
+                        set({ token: '', user: null })
+                    }
                     throw e
                 }
             },

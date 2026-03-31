@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { RiLoader4Line } from 'react-icons/ri';
 import { useAuthStore } from '@/stores/authStore';
+import type { User } from '@/types/user';
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
@@ -21,7 +22,8 @@ export function LoginPage() {
 
     try {
       await login(email, password);
-      navigate('/');
+      const { user } = useAuthStore.getState() as { user: User | null };
+      navigate(user?.isAdmin ? '/admin' : '/');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to login');
     } finally {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { issuesAPI } from '../api/issues';
 import type { Issue } from '../types';
@@ -22,7 +22,7 @@ export function HomePage() {
 
   const { viewMode, categoryFilter, locationFilter } = useFilterStore();
 
-  const loadData = async (showLoader = true) => {
+  const loadData = useCallback(async (showLoader = true) => {
     if (showLoader) {
       setIsLoading(true);
     }
@@ -49,7 +49,7 @@ export function HomePage() {
         setIsLoading(false);
       }
     }
-  };
+  }, [categoryFilter, currentPage, locationFilter.latitude, locationFilter.longitude]);
 
   const handleIssueUpdate = (updatedIssue?: Issue) => {
     if (updatedIssue) {
@@ -62,12 +62,12 @@ export function HomePage() {
 
   useEffect(() => {
     loadData();
-  }, [currentPage]);
+  }, [loadData]);
 
   useEffect(() => {
     setCurrentPage(1);
     loadData(false);
-  }, [categoryFilter, locationFilter]);
+  }, [categoryFilter, locationFilter, loadData]);
 
   if (isLoading) {
     return <Preloader />;

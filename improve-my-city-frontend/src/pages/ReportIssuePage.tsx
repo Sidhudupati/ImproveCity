@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../providers/AuthProvider";
+import { useAuth } from "../hooks/useAuth";
 import { issuesAPI } from "../api/issues";
 import type { IssueCategory } from "../types";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,12 @@ import {
 } from "@/components/ui/select";
 import { RiLoader4Line, RiCloseLine, RiMapPin2Line, RiCameraLine, RiAlertLine } from "react-icons/ri";
 import toast from 'react-hot-toast';
+
+type LocationSuggestion = {
+  display_name: string;
+  lat: string;
+  lon: string;
+};
 
 const categories: IssueCategory[] = [
   "Pothole",
@@ -44,13 +50,13 @@ async function getHumanReadableLocation(lat: number, lng: number): Promise<strin
 }
 
 // Fetch location suggestions from OpenStreetMap Nominatim API
-async function fetchLocationSuggestions(query: string): Promise<any[]> {
+async function fetchLocationSuggestions(query: string): Promise<LocationSuggestion[]> {
   if (!query || query.length < 3) return [];
   try {
     const response = await fetch(
       `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5`
     );
-    const data = await response.json();
+    const data = await response.json() as LocationSuggestion[];
     return data;
   } catch (error) {
     console.error("Error fetching suggestions:", error);
@@ -74,7 +80,7 @@ export function ReportIssuePage() {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
   const [gpsDisabled, setGpsDisabled] = useState(false);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const debounceTimer = useRef<number | null>(null);
@@ -229,7 +235,7 @@ export function ReportIssuePage() {
     }, 500);
   };
 
-  const selectSuggestion = (place: any) => {
+  const selectSuggestion = (place: LocationSuggestion) => {
     setFormData((prev) => ({
       ...prev,
       address: place.display_name,

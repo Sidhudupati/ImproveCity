@@ -29,4 +29,8 @@ v1Router.use('/chatbot', chatbotRoutes)
 v1Router.use('/leaderboard', leaderboardRoutes)
 app.use('/v1', v1Router)
 
+app.get("/", (_req, res) => {
+  res.send("Improve City API is running 🚀");
+});
+
 export { app }

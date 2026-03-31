@@ -1,6 +1,19 @@
 import type { Issue, IssueStatus, IssueCategory, Comment } from '../types';
 import * as issuesService from '../services/issues';
 
+type BackendIssue = issuesService.Issue & {
+  _id?: string;
+  photos?: string[];
+  reportedBy?: string;
+  reportedByName?: string;
+  priority?: 'low' | 'medium' | 'high';
+  resolvedAt?: string;
+  upvotes?: number;
+  upvotedBy?: string[];
+  comments?: Comment[];
+  assignedTo?: string;
+};
+
 class IssuesAPI {
   async getAllIssues(page?: number, limit?: number): Promise<Issue[]> {
     const response = await issuesService.getIssues({ page, limit });
@@ -34,7 +47,7 @@ class IssuesAPI {
     priority: 'low' | 'medium' | 'high',
     location: { address: string; latitude: number; longitude: number },
     photos: string[],
-    _userId: string,
+    userId: string,
     userName: string
   ): Promise<Issue> {
     const issue = await issuesService.createIssue({
@@ -48,6 +61,8 @@ class IssuesAPI {
 
     return this.normalizeIssue({
       ...issue,
+      userId,
+      reportedBy: userId,
       priority,
       reportedByName: userName
     });
@@ -69,14 +84,16 @@ class IssuesAPI {
     return issue;
   }
 
-  async upvoteIssue(issueId: string, _userId: string): Promise<Issue> {
+  async upvoteIssue(issueId: string, userId: string): Promise<Issue> {
+    void userId;
     await issuesService.upvoteIssue(issueId);
     const issue = await this.getIssueById(issueId);
     if (!issue) throw new Error('Issue not found');
     return issue;
   }
 
-  async addComment(issueId: string, _userId: string, userName: string, text: string): Promise<Comment> {
+  async addComment(issueId: string, userId: string, userName: string, text: string): Promise<Comment> {
+    void userId;
     const comment = await issuesService.addComment(issueId, text, []);
     return {
       id: comment.id,
@@ -90,7 +107,7 @@ class IssuesAPI {
     };
   }
 
-  async deleteIssue(issueId: string, _userId: string): Promise<void> {
+  async deleteIssue(issueId: string): Promise<void> {
     await issuesService.deleteIssue(issueId);
   }
 
@@ -119,7 +136,7 @@ class IssuesAPI {
     page?: number,
     limit?: number
   ): Promise<{ issues: Issue[]; total: number; page: number; totalPages: number }> {
-    const filters: any = { page, limit };
+    const filters: issuesService.IssueFilters = { page, limit };
 
     if (category && category !== 'All') {
       filters.category = category;
@@ -164,7 +181,12 @@ class IssuesAPI {
   }
 
   // Helper to normalize issue format between backend and frontend
-  private normalizeIssue = (issue: any): Issue => {
+  private normalizeIssue = (issue: BackendIssue): Issue => {
+    const normalizedId = issue.id ?? issue._id;
+    if (!normalizedId) {
+      throw new Error('Issue is missing an id');
+    }
+
     const createdAt = typeof issue.createdAt === 'number'
       ? new Date(issue.createdAt).toISOString()
       : issue.createdAt;
@@ -174,7 +196,7 @@ class IssuesAPI {
       : issue.updatedAt;
 
     return {
-      id: issue.id || issue._id,
+      id: normalizedId,
       title: issue.title,
       description: issue.description,
       category: issue.category,

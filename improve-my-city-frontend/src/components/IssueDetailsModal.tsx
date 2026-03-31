@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { Issue, Comment } from '../types';
 import { StatusBadge, PriorityBadge } from './Badge';
 import { Button } from '@/components/ui/button';
 import { Modal } from './Modal';
-import { useAuth } from '../providers/AuthProvider';
+import { useAuth } from '../hooks/useAuth';
 import { issuesAPI } from '../api/issues';
 import { RiLoader4Line, RiCameraLine, RiCloseLine } from 'react-icons/ri';
 import toast from 'react-hot-toast';
@@ -27,19 +27,7 @@ export function IssueDetailsModal({ issue, isOpen, onClose, onUpdate }: IssueDet
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoadingComments, setIsLoadingComments] = useState(false);
 
-  // Load comments when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      loadComments();
-    }
-  }, [isOpen, issue.id]);
-
-  // Update local issue when prop changes
-  useEffect(() => {
-    setLocalIssue(issue);
-  }, [issue]);
-
-  const loadComments = async () => {
+  const loadComments = useCallback(async () => {
     setIsLoadingComments(true);
     try {
       const result = await issuesService.getIssueComments(issue.id);
@@ -50,7 +38,19 @@ export function IssueDetailsModal({ issue, isOpen, onClose, onUpdate }: IssueDet
     } finally {
       setIsLoadingComments(false);
     }
-  };
+  }, [issue.id]);
+
+  // Load comments when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      loadComments();
+    }
+  }, [isOpen, loadComments]);
+
+  // Update local issue when prop changes
+  useEffect(() => {
+    setLocalIssue(issue);
+  }, [issue]);
 
   const handleCommentImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;

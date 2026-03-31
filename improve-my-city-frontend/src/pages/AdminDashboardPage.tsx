@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../providers/AuthProvider';
+import { useAuth } from '../hooks/useAuth';
 import { issuesAPI } from '../api/issues';
 import type { Issue, IssueStatus } from '../types';
 import { StatusBadge, PriorityBadge } from '../components/Badge';
@@ -61,8 +61,8 @@ export function AdminDashboardPage() {
   };
 
   const sortedIssues = [...issues].sort((a, b) => {
-    let aValue: any = a[sortField];
-    let bValue: any = b[sortField];
+    let aValue: string | number = a[sortField] ?? '';
+    let bValue: string | number = b[sortField] ?? '';
 
     if (sortField === 'createdAt') {
       aValue = new Date(a.createdAt).getTime();

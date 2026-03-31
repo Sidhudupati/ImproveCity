@@ -12,6 +12,16 @@ import { Button } from '@/components/ui/button';
 import { RiMapPin2Line, RiLoader4Line, RiCloseLine, RiCameraLine } from 'react-icons/ri';
 import ReactMarkdown from 'react-markdown';
 
+type StoredMessage = Omit<Message, 'timestamp'> & {
+  timestamp: string;
+};
+
+type LocationSuggestion = {
+  display_name: string;
+  lat: string;
+  lon: string;
+};
+
 interface Message {
   id: string;
   text: string;
@@ -64,7 +74,7 @@ export function Chatbot() {
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [locationInput, setLocationInput] = useState('');
-  const [locationSuggestions, setLocationSuggestions] = useState<any[]>([]);
+  const [locationSuggestions, setLocationSuggestions] = useState<LocationSuggestion[]>([]);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const [isGettingLocation, setIsGettingLocation] = useState(false);
   
@@ -78,8 +88,8 @@ export function Chatbot() {
       const storedMessages = localStorage.getItem(`${STORAGE_KEY}_${user.id}`);
       if (storedMessages) {
         try {
-          const parsed = JSON.parse(storedMessages);
-          const formattedMessages = parsed.map((msg: any) => ({
+          const parsed = JSON.parse(storedMessages) as StoredMessage[];
+          const formattedMessages = parsed.map((msg) => ({
             ...msg,
             timestamp: new Date(msg.timestamp),
           }));
@@ -149,13 +159,13 @@ export function Chatbot() {
   };
 
   // Location helper functions
-  const fetchLocationSuggestions = async (query: string): Promise<any[]> => {
+  const fetchLocationSuggestions = async (query: string): Promise<LocationSuggestion[]> => {
     if (!query || query.length < 3) return [];
     try {
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5`
       );
-      const data = await response.json();
+      const data = await response.json() as LocationSuggestion[];
       return data;
     } catch (error) {
       console.error("Error fetching suggestions:", error);
@@ -234,7 +244,7 @@ export function Chatbot() {
     }, 500);
   };
 
-  const selectLocationSuggestion = (place: any) => {
+  const selectLocationSuggestion = (place: LocationSuggestion) => {
     const address = place.display_name;
     setLocationInput(address);
     setIssueData((prev) => ({
@@ -369,7 +379,7 @@ export function Chatbot() {
       }
 
       return response.message;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Chatbot error:', error);
       return "I'm having trouble connecting right now. Please try again in a moment or check your issues directly on the dashboard.";
     }
@@ -485,16 +495,16 @@ export function Chatbot() {
                       <div className="text-xs sm:text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert prose-p:my-1 prose-headings:my-2 prose-ul:my-1 prose-ol:my-1 prose-li:my-0.5">
                         <ReactMarkdown
                           components={{
-                            h1: ({node, ...props}) => <h1 className="text-base sm:text-lg font-bold mb-2" {...props} />,
-                            h2: ({node, ...props}) => <h2 className="text-sm sm:text-base font-bold mb-1.5" {...props} />,
-                            h3: ({node, ...props}) => <h3 className="text-xs sm:text-sm font-semibold mb-1" {...props} />,
-                            p: ({node, ...props}) => <p className="mb-1 last:mb-0" {...props} />,
-                            strong: ({node, ...props}) => <strong className="font-bold" {...props} />,
-                            em: ({node, ...props}) => <em className="italic" {...props} />,
-                            ul: ({node, ...props}) => <ul className="list-disc list-inside my-1 space-y-0.5" {...props} />,
-                            ol: ({node, ...props}) => <ol className="list-decimal list-inside my-1 space-y-0.5" {...props} />,
-                            li: ({node, ...props}) => <li className="ml-2" {...props} />,
-                            code: ({node, className, children, ...props}) => {
+                            h1: (props) => <h1 className="text-base sm:text-lg font-bold mb-2" {...props} />,
+                            h2: (props) => <h2 className="text-sm sm:text-base font-bold mb-1.5" {...props} />,
+                            h3: (props) => <h3 className="text-xs sm:text-sm font-semibold mb-1" {...props} />,
+                            p: (props) => <p className="mb-1 last:mb-0" {...props} />,
+                            strong: (props) => <strong className="font-bold" {...props} />,
+                            em: (props) => <em className="italic" {...props} />,
+                            ul: (props) => <ul className="list-disc list-inside my-1 space-y-0.5" {...props} />,
+                            ol: (props) => <ol className="list-decimal list-inside my-1 space-y-0.5" {...props} />,
+                            li: (props) => <li className="ml-2" {...props} />,
+                            code: ({ className, children, ...props }) => {
                               const isInline = !className;
                               return isInline ? (
                                 <code className="bg-muted/50 px-1 py-0.5 rounded text-xs" {...props}>
@@ -506,8 +516,8 @@ export function Chatbot() {
                                 </code>
                               );
                             },
-                            a: ({node, ...props}) => <a className="underline hover:no-underline" target="_blank" rel="noopener noreferrer" {...props} />,
-                            blockquote: ({node, ...props}) => <blockquote className="border-l-2 border-muted-foreground/30 pl-2 italic my-1" {...props} />,
+                            a: (props) => <a className="underline hover:no-underline" target="_blank" rel="noopener noreferrer" {...props} />,
+                            blockquote: (props) => <blockquote className="border-l-2 border-muted-foreground/30 pl-2 italic my-1" {...props} />,
                           }}
                         >
                           {message.text}

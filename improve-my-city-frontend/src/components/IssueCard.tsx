@@ -3,7 +3,7 @@ import type { Issue } from '../types';
 import { StatusBadge, PriorityBadge } from './Badge';
 import { Button } from '@/components/ui/button';
 import { IssueDetailsModal } from './IssueDetailsModal';
-import { useAuth } from '../providers/AuthProvider';
+import { useAuth } from '../hooks/useAuth';
 import { issuesAPI } from '../api/issues';
 import * as issuesService from '../services/issues';
 import { RiLoader4Line } from 'react-icons/ri';

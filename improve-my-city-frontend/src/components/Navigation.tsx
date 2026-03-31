@@ -1,8 +1,9 @@
 import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../providers/AuthProvider';
+import { useAuth } from '../hooks/useAuth';
 import ThemeSwitcher from '@/components/ThemeSwitcher';
 import { Button } from '@/components/ui/button';
 import { useMemo, useState } from 'react';
+import type { IconType } from 'react-icons';
 import {
   RiFileAddLine,
   RiFileListLine,
@@ -43,7 +44,7 @@ export function Navigation() {
         { to: '/resolved', label: 'Resolved', icon: RiCheckboxCircleLine },
         { to: '/leaderboard', label: 'Leaderboard', icon: RiTrophyLine },
         ...(user?.isAdmin ? [{ to: '/admin', label: 'Admin', icon: RiShieldStarLine }] : []),
-      ] as { to: string; label: string; icon: any }[],
+      ] as { to: string; label: string; icon: IconType }[],
     [user?.isAdmin]
   );
 

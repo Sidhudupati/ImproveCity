@@ -6,6 +6,12 @@ import type { IssueCategory } from '../types';
 import toast from 'react-hot-toast';
 import { Input } from './ui/input';
 
+type LocationSuggestion = {
+    display_name: string
+    lat: string
+    lon: string
+}
+
 const categories: (IssueCategory | 'All')[] = [
     'All',
     'Pothole',
@@ -33,13 +39,13 @@ async function getHumanReadableLocation(lat: number, lng: number): Promise<strin
 }
 
 // Fetch location suggestions from OpenStreetMap Nominatim API
-async function fetchLocationSuggestions(query: string): Promise<any[]> {
+async function fetchLocationSuggestions(query: string): Promise<LocationSuggestion[]> {
     if (!query || query.length < 3) return [];
     try {
         const response = await fetch(
             `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5`
         );
-        const data = await response.json();
+        const data = await response.json() as LocationSuggestion[];
         return data;
     } catch (error) {
         console.error("Error fetching suggestions:", error);
@@ -60,7 +66,7 @@ export function FilterBar() {
 
     const [locationInput, setLocationInput] = useState(locationFilter.query);
     const [isGeocoding, setIsGeocoding] = useState(false);
-    const [suggestions, setSuggestions] = useState<any[]>([]);
+    const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
     const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
     const debounceTimer = useRef<number | null>(null);
 
@@ -174,7 +180,7 @@ export function FilterBar() {
         }, 500);
     };
 
-    const selectSuggestion = (place: any) => {
+    const selectSuggestion = (place: LocationSuggestion) => {
         const address = place.display_name;
         setLocationInput(address);
         setLocationFilter({

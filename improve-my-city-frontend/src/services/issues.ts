@@ -53,6 +53,12 @@ export interface IssueFilters {
     limit?: number
 }
 
+type UpdateIssueStatusData = {
+    status: 'open' | 'in_progress' | 'resolved' | 'closed'
+    resolutionMessage?: string
+    resolutionUploadUrls?: string[]
+}
+
 // Upload images for an issue
 export const uploadIssueImages = async (files: File[]): Promise<string[]> => {
     const formData = new FormData()
@@ -141,13 +147,15 @@ export const updateIssueStatus = async (
     resolutionMessage?: string,
     resolutionUploadUrls?: string[]
 ): Promise<{ id: string; title: string; status: string; updatedAt: number }> => {
+    const payload: UpdateIssueStatusData = {
+        status,
+        ...(resolutionMessage !== undefined ? { resolutionMessage } : {}),
+        ...(resolutionUploadUrls !== undefined ? { resolutionUploadUrls } : {}),
+    }
+
     const response = await callApi(`/issues/${issueId}/status`, {
         method: 'PUT',
-        body: { 
-            status,
-            resolutionMessage,
-            resolutionUploadUrls
-        }
+        body: payload
     })
     return response as { id: string; title: string; status: string; updatedAt: number }
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type { IconType } from 'react-icons';
 import { getLeaderboard } from '@/services/leaderboard';
 import type { LeaderboardEntry } from '@/types';
 import { useAuthStore } from '@/stores/authStore';
@@ -18,7 +19,7 @@ import {
   RiCloseLine,
 } from 'react-icons/ri';
 
-const badgeConfig: Record<string, { color: string; gradient: string; icon: any }> = {
+const badgeConfig: Record<string, { color: string; gradient: string; icon: IconType }> = {
   'Legend': { 
     color: 'from-purple-500 to-pink-500', 
     gradient: 'bg-linear-to-br from-purple-500/10 to-pink-500/10 border-purple-500/30',

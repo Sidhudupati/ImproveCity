@@ -1,15 +1,13 @@
 'use client'
-import React, { useEffect } from "react"
+import React, { useCallback, useEffect } from "react"
 import { useAuthStore } from "@/stores/authStore"
-import { useNavigate } from "react-router-dom"
 import { Preloader } from "@/components/Preloader"
 
 const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { login } = useAuthStore()
   const [isLoading, setIsLoading] = React.useState(true)
-  const navigate = useNavigate()
 
-  const handleLogin = async () => {
+  const handleLogin = useCallback(async () => {
     try {
       await login()
     } catch (error) {
@@ -17,11 +15,11 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [login])
 
   useEffect(() => {
     handleLogin()
-  }, [navigate])
+  }, [handleLogin])
 
 
   if (isLoading) return (
@@ -32,15 +30,6 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   return <>
     {children}
   </>
-}
-
-export const useAuth = () => {
-  const { ...auth } = useAuthStore()
-  if (!auth.user) throw new Error("No authenticated user found")
-  return {
-    ...auth,
-    user: auth.user
-  }
 }
 
 export default AuthProvider

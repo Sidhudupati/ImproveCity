@@ -1,9 +1,11 @@
 import { API_URL } from "@/config"
 import { useAuthStore } from "@/stores/authStore"
 
-export interface ApiOptions extends Omit<RequestInit, 'headers'> {
-    headers?: Record<string, any>
-    body?: any
+export type ApiBody = BodyInit | object | undefined
+
+export interface ApiOptions extends Omit<RequestInit, 'headers' | 'body'> {
+    headers?: Record<string, string>
+    body?: ApiBody
 }
 
 const createHeaders = (
@@ -25,31 +27,47 @@ const createFetchOptions = (
     options: ApiOptions,
     authToken?: string,
     { noContentType = false, stringify = true }: { noContentType?: boolean, stringify?: boolean } = {}
-): ApiOptions => {
+): RequestInit => {
+    const body = options.body === undefined
+        ? undefined
+        : stringify
+            ? JSON.stringify(options.body)
+            : options.body as BodyInit
+
     return {
         ...options,
         headers: createHeaders(authToken, options.headers, { noContentType }),
-        body: options.body ? (stringify ? JSON.stringify(options.body) : options.body) : undefined,
+        body,
     }
 }
 
-export async function callApi(
+export async function callApi<TResponse>(
     endpoint: string,
     options: ApiOptions = {},
     { noContentType = false, stringify = true }: { noContentType?: boolean, stringify?: boolean } = {}
-): Promise<unknown> {
+): Promise<TResponse> {
     const { token, setToken, setUser } = useAuthStore.getState();
     const fetchOptions = createFetchOptions(options, token, { stringify, noContentType });
 
-    const response = await fetch(`${API_URL}/v1${endpoint}`, fetchOptions);
-    const responseData = await response.json();
+    let response: Response;
+
+    try {
+        response = await fetch(`${API_URL}/v1${endpoint}`, fetchOptions);
+    } catch {
+        throw new Error('Unable to reach the server. Check that the backend is running and VITE_API_URL is correct.');
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+    const responseData = contentType.includes('application/json')
+        ? await response.json() as { authFailed?: boolean; message?: string } & TResponse
+        : { message: await response.text() } as { authFailed?: boolean; message?: string } & TResponse;
 
     if (!response.ok) {
         if (responseData.authFailed) {
             setToken('');
             setUser(null)
         }
-        throw new Error(responseData.message);
+        throw new Error(responseData.message || `Request failed with status ${response.status}`);
     }
     return responseData;
 }

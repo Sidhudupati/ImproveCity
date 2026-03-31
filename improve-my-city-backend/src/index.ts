@@ -1,11 +1,13 @@
 import { app } from "@/app";
 import { connectDB } from "@/config/db";
 import { MONGO_URI, PORT } from "@/config/env";
+import { ensureAdminUser } from "@/services/bootstrap";
 import logger from "@/utils/logger";
 
 const startServer = async () => {
   try {
     await connectDB(MONGO_URI);
+    await ensureAdminUser();
 
     const server = app.listen(PORT, () => {
       logger.info(`Server running on port http://localhost:${PORT}`);
