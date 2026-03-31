@@ -14,6 +14,8 @@ import {
   RiLogoutBoxRLine,
   RiLoginBoxLine,
   RiTrophyLine,
+  RiCommunityLine,
+  RiUserSettingsLine,
 } from 'react-icons/ri';
 
 export function Navigation() {
@@ -31,6 +33,8 @@ export function Navigation() {
         { to: '/my-issues', label: 'My Issues' },
         { to: '/resolved', label: 'Resolved' },
         { to: '/leaderboard', label: 'Leaderboard' },
+        { to: '/community', label: 'Community' },
+        ...(user?.isAdmin ? [{ to: '/community/admin', label: 'Community Admin' }] : []),
         ...(user?.isAdmin ? [{ to: '/admin', label: 'Admin' }] : []),
       ] as { to: string; label: string }[],
     [user?.isAdmin]
@@ -43,6 +47,8 @@ export function Navigation() {
         { to: '/my-issues', label: 'My Issues', icon: RiFileListLine },
         { to: '/resolved', label: 'Resolved', icon: RiCheckboxCircleLine },
         { to: '/leaderboard', label: 'Leaderboard', icon: RiTrophyLine },
+        { to: '/community', label: 'Community', icon: RiCommunityLine },
+        ...(user?.isAdmin ? [{ to: '/community/admin', label: 'Community Admin', icon: RiUserSettingsLine }] : []),
         ...(user?.isAdmin ? [{ to: '/admin', label: 'Admin', icon: RiShieldStarLine }] : []),
       ] as { to: string; label: string; icon: IconType }[],
     [user?.isAdmin]

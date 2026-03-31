@@ -1,4 +1,5 @@
 import { ADMIN_EMAIL, ADMIN_NAME, ADMIN_PASSWORD } from '@/config/env';
+import { ensureDefaultSocieties } from '@/services/community';
 import userModel from '@/models/user';
 import { hashPassword, verifyPassword } from '@/services/auth';
 import logger from '@/utils/logger';
@@ -47,4 +48,9 @@ export const ensureAdminUser = async (): Promise<void> => {
 
     await userModel.updateOne({ _id: existingAdmin._id }, { $set: updates });
     logger.info(`Synchronized admin user: ${ADMIN_EMAIL}`);
+};
+
+export const ensureCommunitySeedData = async (): Promise<void> => {
+    await ensureDefaultSocieties();
+    logger.info('Community societies are ready');
 };

@@ -10,6 +10,8 @@ import { MyIssuesPage } from './pages/MyIssuesPage';
 import { ResolvedIssuesPage } from './pages/ResolvedIssuesPage';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import { LeaderboardPage } from './pages/LeaderboardPage';
+import { CommunityPage } from './pages/CommunityPage';
+import { AdminCommunityPage } from './pages/AdminCommunityPage';
 import type { ReactNode } from 'react';
 import { useAuthStore } from './stores/authStore';
 import { Toaster } from 'react-hot-toast';
@@ -53,7 +55,9 @@ function AppRoutes() {
         <Route path="/my-issues" element={<ProtectedRoute><MyIssuesPage /></ProtectedRoute>} />
         <Route path="/resolved" element={<ProtectedRoute><ResolvedIssuesPage /></ProtectedRoute>} />
         <Route path="/leaderboard" element={<ProtectedRoute><LeaderboardPage /></ProtectedRoute>} />
+        <Route path="/community" element={<ProtectedRoute><CommunityPage /></ProtectedRoute>} />
         <Route path="/admin" element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
+        <Route path="/community/admin" element={<AdminRoute><AdminCommunityPage /></AdminRoute>} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

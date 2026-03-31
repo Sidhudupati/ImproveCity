@@ -69,3 +69,5 @@ export interface LeaderboardResponse {
   leaderboard: LeaderboardEntry[];
   totalUsers: number;
 }
+
+export * from './community';

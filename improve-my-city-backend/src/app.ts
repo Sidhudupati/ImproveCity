@@ -7,6 +7,7 @@ import userRoutes from './routes/user'
 import issueRoutes from './routes/issue'
 import chatbotRoutes from './routes/chatbot'
 import leaderboardRoutes from './routes/leaderboard'
+import communityRoutes from './routes/community'
 
 const app: Express = express()
 app.set('trust proxy', true)
@@ -27,6 +28,7 @@ v1Router.use('/users', userRoutes)
 v1Router.use('/issues', issueRoutes)
 v1Router.use('/chatbot', chatbotRoutes)
 v1Router.use('/leaderboard', leaderboardRoutes)
+v1Router.use('/community', communityRoutes)
 app.use('/v1', v1Router)
 
 app.get("/", (_req, res) => {
